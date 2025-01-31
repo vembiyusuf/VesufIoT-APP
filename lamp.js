@@ -82,8 +82,8 @@ function speakResponse(text) {
     const speech = new SpeechSynthesisUtterance(text);
     speech.lang = 'id-ID'; 
     speech.volume = 1; 
-    speech.rate = 1; 
-    speech.pitch = 0;
+    speech.rate = 0.8; 
+    speech.pitch = 0.1;
 
     if ('speechSynthesis' in window) {
         window.speechSynthesis.speak(speech);
