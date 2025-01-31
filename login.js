@@ -11,7 +11,7 @@ function login() {
     // Contoh autentikasi sederhana
     if (username === 'Vembi' && password === '181107') {
         localStorage.setItem('isLoggedIn', 'true');
-        window.location.href = 'lampp.html'; // Redirect ke halaman utama
+        window.location.href = 'lamp.html'; // Redirect ke halaman utama
     } else {
         alert('Username atau password salah!');
     }
