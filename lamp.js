@@ -33,9 +33,9 @@ client.on('message', (topic, message) => {
     } else if (topic === 'vesuf-iot/soil-moisture') {
         document.getElementById('kelembabanTanah').innerText = payload;
     } else if (topic === 'vesuf-iot/wifi') {
-        const espStatus = payload === 'online' 
-            ? '<span class="font-bold text-green-500">Hidup</span>' 
-            : '<span class="font-bold text-red-500">Mati</span>';
+       const espStatus = payload === 'online' 
+  ? '<span class="font-bold text-green-500">Hidup</span>'
+  : '<span class="font-bold text-red-500">Mati</span>';
         document.getElementById('espStatus').innerHTML = `Status ESP: ${espStatus}`;
     } else if (topic === 'vesuf-iot/kecerahan') {
         document.getElementById('kecerahan').innerText = payload;
