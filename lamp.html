@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control ESP via MQTT</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #fbbf24; 
+            border-radius: 5px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #f59e0b; 
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: #f59e0b; 
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col items-center justify-start">
+
+<div class="w-[768px] max-w-screen-sm mx-auto bg-slate-300">
+ 
+    <div class="flex items-center space-x-2 mb-6 bg-slate-700 p-4">
+        <a href="vesuf.html#apps">
+            <button class="p-2 bg-indigo-400 rounded-full cursor-pointer hover:bg-indigo-400">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 text-white">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+        </a>
+        <img src="img/pp.jpeg" alt="Profile" class="rounded-full w-12 h-12 shadow-30">
+        <h1 class="text-2xl font-semibold text-white">Selamat Datang di Vesuf IoT Sistem</h1>
+    </div>
+
+    <div class="px-5">
+
+        <div class="p-6 bg-white shadow-lg rounded-xl bg-red-500 mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-white">Status Sistem</h2>
+            <div id="brokerStatus" class="p-4 bg-gray-100 rounded-md text-sm text-gray-700">
+                Status Broker: <span class="font-bold text-red-500">Terputus</span>
+            </div>
+            <div id="espStatus" class="p-4 mt-2 bg-gray-100 rounded-md text-sm text-gray-700">
+                Status ESP: <span class="font-bold text-red-500">Mati</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+
+            <div class="p-6 bg-white shadow-lg rounded-xl bg-green-600">
+                <h2 class="text-xl font-semibold mb-4 text-white">Data Sensor Suhu DHT11</h2>
+                <div class="p-4 bg-gray-100 rounded-md text-green-600">
+                    <p>Suhu: <span id="suhu" class="font-bold text-green-600">--</span> °C</p>
+                    <p>Kelembaban: <span id="kelembaban" class="font-bold text-green-600">--</span> %</p>
+                </div>
+            </div>
+
+            <div class="p-6 bg-white shadow-lg rounded-xl bg-yellow-400">
+                <h2 class="text-xl font-semibold mb-4 text-white">Data Sensor Soil Moisture</h2>
+                <div class="p-4 bg-gray-100 rounded-md text-yellow-400">
+                    <p>Kelembaban Tanah: <span id="kelembabanTanah" class="font-bold">--</span> %</p>
+                </div>
+            </div>
+
+            <div class="p-6 bg-white shadow-lg rounded-xl bg-blue-500">
+                <h2 class="text-xl font-semibold mb-4 text-white">Data Sensor Kecerahan</h2>
+                <div class="p-4 bg-gray-100 rounded-md text-blue-500">
+                    <p>Kecerahan: <span id="kecerahan" class="font-bold">--</span> lx</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 w-full">
+
+            <div class="p-6 bg-white shadow-lg rounded-xl bg-lime-600 my-5">
+                <h2 class="text-xl font-semibold mb-4 text-white">Kontrol Servo</h2>
+                <input type="range" id="servoPosition" min="0" max="180" value="90" 
+                    class="w-full p-2 border border-gray-300 rounded-md mb-2 text-yellow-600" />
+                <p class="text-center text-lg font-bold text-white" id="servoValue">Posisi: 90°</p>
+            </div>
+
+            <div class="p-6 bg-white shadow-lg rounded-xl bg-emerald-700">
+                <h2 class="text-xl font-semibold mb-4 text-white">Kontrol Lampu</h2>
+                <div class="flex justify-between">
+                    <button onclick="controlLamp('ON')" 
+                        class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 mr-2">
+                        ON
+                    </button>
+                    <button onclick="controlLamp('OFF')" 
+                        class="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 ml-2">
+                        OFF
+                    </button>
+                </div>
+                <div class="mt-4 p-4 bg-gray-100 rounded-md text-emerald-700">
+                    <p>Status Lampu: <span id="lampStatus" class="font-bold text-red-500">Mati</span></p>
+                </div>
+            </div>
+
+            <div class="p-6 bg-white shadow-lg rounded-xl bg-purple-500">
+                <h2 class="text-xl font-semibold mb-4 text-white">Voice Control Lampu</h2>
+                <button onclick="startVoiceControl()" 
+                    class="w-full bg-stone-700 text-white py-2 px-4 rounded-lg hover:bg-blue-600">
+                    🎤 Mulai Voice Control
+                </button>
+                <p id="voiceStatus" class="text-white text-center mt-2">Klik tombol di atas untuk memulai kontrol suara.</p>
+            </div>
+        </div>
+
+        <div class="p-6 bg-white shadow-lg rounded-xl bg-blue-600 my-5">
+    <h2 class="text-xl font-semibold mb-4 text-white">Grafik Suhu & Kelembaban</h2>
+    <canvas id="sensorChart"></canvas>
+</div>
+
+    </div>
+</div>
+<script src="lamp.js"></script>
+<script src="grafik.js"></script>
+
+</body>
+</html>
