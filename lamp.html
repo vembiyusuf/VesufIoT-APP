@@ -125,6 +125,24 @@
                 </button>
                 <p id="voiceStatus" class="text-white text-center mt-2">Klik tombol di atas untuk memulai kontrol suara.</p>
             </div>
+
+            <div class="p-6 bg-white shadow-lg rounded-xl bg-pink-500">
+    <h2 class="text-xl font-semibold mb-4 text-white">Kontrol Buzzer</h2>
+    <div class="flex justify-between">
+        <button onclick="controlBuzzer('ON')" 
+            class="w-full bg-rose-500 text-white py-2 px-4 rounded-lg hover:bg-rose-600 mr-2 flex items-center justify-center">
+            🎵 Mainkan Melody
+        </button>
+        <button onclick="controlBuzzer('OFF')" 
+            class="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 ml-2 flex items-center justify-center">
+            🔇 Hentikan Melody
+        </button>
+    </div>
+    <div class="mt-4 p-4 bg-gray-100 rounded-md text-pink-700">
+        <p>Status Buzzer: <span id="buzzerStatus" class="font-bold text-red-500">Mati</span></p>
+    </div>
+</div>
+
         </div>
 
         <div class="p-6 bg-white shadow-lg rounded-xl bg-blue-300 my-4 w-full">

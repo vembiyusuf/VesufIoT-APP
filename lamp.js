@@ -77,6 +77,25 @@ function controlLamp(state) {
     });
 }
 
+function controlBuzzer(state) {
+    client.publish('vesuf-iot/buzzer', state, { qos: 1 }, (err) => {
+        if (err) {
+            alert('Kesalahan saat mengontrol buzzer.');
+            console.error('Kesalahan Publish:', err);
+        } else {
+            const buzzerStatusElement = document.getElementById('buzzerStatus');
+            if (state === 'ON') {
+                buzzerStatusElement.innerHTML = '<span class="font-bold text-green-500">Sedang Berbunyi</span>';
+                speakResponse("Melodi sedang dimainkan.");
+            } else {
+                buzzerStatusElement.innerHTML = '<span class="font-bold text-red-500">Mati</span>';
+                speakResponse("Melodi telah dihentikan.");
+            }
+        }
+    });
+}
+
+
 
 function speakResponse(text) {
     const speech = new SpeechSynthesisUtterance(text);
