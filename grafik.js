@@ -1,99 +1,87 @@
-const ctx = document.getElementById('sensorChart').getContext('2d');
-const sensorChart = new Chart(ctx, {
+const ctx = document.getElementById('waveformChart').getContext('2d');
+
+const waveformChart = new Chart(ctx, {
     type: 'line',
     data: {
-        labels: [], // Waktu pengambilan data
+        labels: Array(50).fill(''),  // Titik waktu kosong untuk real-time
         datasets: [
             {
                 label: 'Suhu (°C)',
                 borderColor: 'red',
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                data: [],
+                data: Array(50).fill(0),
                 fill: true
             },
             {
                 label: 'Kelembaban (%)',
                 borderColor: 'blue',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                data: [],
+                data: Array(50).fill(0),
                 fill: true
             },
             {
                 label: 'Kecerahan (Lux)',
                 borderColor: 'yellow',
                 backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                data: [],
+                data: Array(50).fill(0),
                 fill: true
             },
             {
                 label: 'Soil Moisture (%)',
                 borderColor: 'green',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                data: [],
+                data: Array(50).fill(0),
                 fill: true
             }
         ]
     },
     options: {
         responsive: true,
+        animation: { duration: 0 },  // Hilangkan delay untuk real-time
         scales: {
-            x: { title: { display: true, text: 'Waktu' } },
-            y: { title: { display: true, text: 'Nilai' } }
-        }
+            x: { display: false },  // Sumbu X disembunyikan agar fokus ke gelombang
+            y: { title: { display: true, text: 'Nilai Sensor' } }
+        },
+        elements: { line: { tension: 0.3 } } // Haluskan garis gelombang
     }
 });
 
-function updateChart(sensor, value) {
-    const now = new Date().toLocaleTimeString();
-    if (sensorChart.data.labels.length > 10) {
-        sensorChart.data.labels.shift();
-        sensorChart.data.datasets.forEach(dataset => dataset.data.shift());
-    }
+function updateWaveform(sensor, value) {
+    // Geser data ke kiri agar bergerak real-time
+    waveformChart.data.labels.shift();
+    waveformChart.data.datasets.forEach(dataset => dataset.data.shift());
 
-    sensorChart.data.labels.push(now);
+    // Tambahkan nilai terbaru ke dataset yang sesuai
+    waveformChart.data.labels.push('');
     if (sensor === 'suhu') {
-        sensorChart.data.datasets[0].data.push(value);
+        waveformChart.data.datasets[0].data.push(value);
     } else if (sensor === 'kelembaban') {
-        sensorChart.data.datasets[1].data.push(value);
+        waveformChart.data.datasets[1].data.push(value);
     } else if (sensor === 'kecerahan') {
-        sensorChart.data.datasets[2].data.push(value);
+        waveformChart.data.datasets[2].data.push(value);
     } else if (sensor === 'soil-moisture') {
-        sensorChart.data.datasets[3].data.push(value);
+        waveformChart.data.datasets[3].data.push(value);
     }
-    sensorChart.update();
 
-    // Simpan data ke localStorage agar tetap ada meskipun halaman direfresh
-    localStorage.setItem('chartData', JSON.stringify(sensorChart.data));
-    localStorage.setItem('chartLabels', JSON.stringify(sensorChart.data.labels));
+    waveformChart.update();
 }
 
-// Cek apakah ada data yang tersimpan di localStorage
-window.onload = function () {
-    const storedData = localStorage.getItem('chartData');
-    const storedLabels = localStorage.getItem('chartLabels');
-
-    if (storedData && storedLabels) {
-        sensorChart.data = JSON.parse(storedData);
-        sensorChart.data.labels = JSON.parse(storedLabels);
-        sensorChart.update();
-    }
-};
-
+// MQTT menerima data sensor
 client.on('message', (topic, message) => {
-    const payload = message.toString();
-    console.log('Pesan:', topic, payload);
+    const payload = parseFloat(message.toString());  // Ubah string jadi angka
+    console.log('MQTT Data:', topic, payload);
 
     if (topic === 'vesuf-iot/suhu') {
         document.getElementById('suhu').innerText = payload;
-        updateChart('suhu', parseFloat(payload));
+        updateWaveform('suhu', payload);
     } else if (topic === 'vesuf-iot/kelembaban') {
         document.getElementById('kelembaban').innerText = payload;
-        updateChart('kelembaban', parseFloat(payload));
+        updateWaveform('kelembaban', payload);
     } else if (topic === 'vesuf-iot/kecerahan') {
         document.getElementById('kecerahan').innerText = payload;
-        updateChart('kecerahan', parseFloat(payload));
+        updateWaveform('kecerahan', payload);
     } else if (topic === 'vesuf-iot/soil-moisture') {
         document.getElementById('soil-moisture').innerText = payload;
-        updateChart('soil-moisture', parseFloat(payload));
+        updateWaveform('soil-moisture', payload);
     }
 });
